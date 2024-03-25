@@ -1,15 +1,12 @@
-DOCKER_PYTHON_EXEC:= docker compose exec qa_ollama_python
-DOCKER_CHAT_EXEC:= docker compose exec qa_ollama_server
+start:
+	docker-compose -f docker-compose.yml up -d --remove-orphans
 
-__start:
-	docker compose up -d --remove-orphans
+run: start
+	docker-compose -f docker-compose.yml exec qa_ollama_python uvicorn app:app --host 0.0.0.0 --port 5000
 
-run: __start
-	${DOCKER_PYTHON_EXEC} python src/test.multidocument.py
+bash: start
+	docker-compose -f docker-compose.yml exec qa_ollama_python bash
 
-bash: __start
-	$(DOCKER_PYTHON_EXEC) bash
-
-setup: __start
-	${DOCKER_CHAT_EXEC} ollama pull mistral
-	${DOCKER_PYTHON_EXEC} pip install --no-cache-dir -r src/requirements.txt
+setup: start
+	docker-compose -f docker-compose.yml exec qa_ollama_server ollama pull mistral
+	docker-compose -f docker-compose.yml exec qa_ollama_python pip install --no-cache-dir -r src/requirements.txt
